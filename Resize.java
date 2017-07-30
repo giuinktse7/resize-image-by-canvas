@@ -14,7 +14,8 @@ import java.io.Console;
 public class Resize {
   private static String[] acceptedImageTypes = {"png", "jpg", "jpeg"};
   private static List<String> resizedFilePaths;
-  private static String RESIZE_FOLDER_PATH = "./resized-images/";
+  private static final String RESIZE_FOLDER_PATH = "./resized-images/";
+  private static final double ASPECT_RATIO = 0.75;
 
   public static void main(String[] args) {
       createResizedFolder();
@@ -50,31 +51,12 @@ public class Resize {
     try {
       BufferedImage image = ImageIO.read(imageFile);
 
-      int newWidth = Resize.getNewWidth(image.getWidth(), image.getHeight());
-      int newHeight = Resize.getNewHeight(image.getWidth(), image.getHeight());
+      double quotient = image.getWidth() / image.getHeight();
+      int newWidth = quotient < ASPECT_RATIO ? (int) (image.getHeight() * 3 / 4) : image.getWidth();
+      int newHeight = quotient > ASPECT_RATIO ? (int) (image.getWidth() * 4 / 3) : image.getHeight();
       BufferedImage scaled = Resize.resizeImage(image, newWidth, newHeight);
       Resize.save(scaled, imageFile.getName());
     } catch (IOException e) {
-    }
-  }
-
-  private static int getNewWidth(int width, int height) {
-    double aspectRatio = 0.75;
-    double quotient = width / height;
-    if (quotient < aspectRatio) {
-      return (int) (height * 3 / 4);
-    } else {
-      return width;
-    }
-  }
-
-  private static int getNewHeight(int width, int height) {
-    double aspectRatio = 0.75;
-    double quotient = width / height;
-    if (quotient > aspectRatio) {
-      return (int) (width * 4 / 3);
-    } else {
-      return height;
     }
   }
 
@@ -105,9 +87,8 @@ public class Resize {
   }
 
   private static void save(RenderedImage image, String imagePath) throws IOException {
-    String name = imagePath.split("\\.")[0];
-    String ending = imagePath.substring(imagePath.lastIndexOf('.'));
-    ImageIO.write(image, "png", new File(RESIZE_FOLDER_PATH + name + ending));
+    System.out.println(imagePath + " resized.");
+    ImageIO.write(image, "png", new File(RESIZE_FOLDER_PATH + imagePath));
   }
 
   public static BufferedImage resizeImage(BufferedImage sourceImage, Integer newWidth, Integer newHeight) {
